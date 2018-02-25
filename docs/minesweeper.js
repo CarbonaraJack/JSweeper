@@ -108,6 +108,7 @@ var drawField = function (ctx, margin, width, height){
   if(cellWidth<cellSize){
     cellSize=cellWidth;
   }
+  //cellSize=25;//default minesweeper dimensions
   /*
   ctx.beginPath();
   ctx.rect(margin,margin,width,height);
@@ -116,28 +117,97 @@ var drawField = function (ctx, margin, width, height){
   */
   for (var i = 0; i < this.columns; i++) {
     for (var j = 0; j < this.rows; j++) {
-      //draw the border
-      ctx.beginPath();
-      ctx.rect(margin+(i*cellSize),margin+(j*cellSize),cellSize,cellSize);
-      ctx.strokeStyle = "000";
-      ctx.stroke();
-      //get the text of the cell
-      var cellText = this.cells[i][j].value;
-      if(cellText === "B"){
-        //For now if I have a bomb I will draw *, will change it with a mine
-        //picture in the future.
-        cellText = "*";
-      }
-      //Draw the text only if I have to
-      if(cellText!==0){
-        //the font size will be 80% of the cell size
-        ctx.font = cellSize*0.8 + 'px sans-serif';
-        ctx.textAlign = "center";
-        ctx.textBaseline = "bottom";
-        ctx.fillText(cellText,
-          //align the text at the bottm middle of the cell. This together with the
-          //80% font size magically centers the text. TEST WITH MULTIPLE BROWSERS!
-          margin+(i*cellSize)+cellSize/2,margin+(j*cellSize)+cellSize);
+      if(this.cells[i][j].type==="hidden"){
+        //draw the backround of the cell
+        ctx.beginPath();
+        ctx.rect(margin+(i*cellSize),margin+(j*cellSize),cellSize,cellSize);
+        ctx.fillStyle = "#d3d3d3";
+        ctx.fill();
+        //draw the border
+        //I have to simulate standard HTML solid border behaviour
+        //this is a pain, but I want to stick with the original minesweeper look
+        //and feel as much as I can
+
+        //Top and left borders
+        ctx.beginPath();
+        ctx.moveTo(margin+(i*cellSize),margin+(j*cellSize));
+        ctx.lineTo(margin+(i*cellSize)+cellSize,margin+(j*cellSize));
+        ctx.lineTo(margin+(i*cellSize)+cellSize-1,margin+(j*cellSize)+1);
+        ctx.lineTo(margin+(i*cellSize)+1,margin+(j*cellSize)+1);
+        ctx.lineTo(margin+(i*cellSize)+1,margin+(j*cellSize)+cellSize-2);
+        ctx.lineTo(margin+(i*cellSize),margin+(j*cellSize)+cellSize-1);
+        ctx.closePath();
+        ctx.strokeStyle = "#f5f5f5";
+        ctx.stroke();
+        //bottom and right borders
+        ctx.beginPath();
+        ctx.moveTo(margin+(i*cellSize)-1+cellSize,margin+(j*cellSize));
+        ctx.lineTo(margin+(i*cellSize)-1+cellSize,margin+(j*cellSize)+cellSize-1);
+        ctx.lineTo(margin+(i*cellSize),margin+(j*cellSize)+cellSize-1);
+        ctx.lineTo(margin+(i*cellSize)+1,margin+(j*cellSize)+cellSize-2);
+        ctx.lineTo(margin+(i*cellSize)-1+cellSize-1,margin+(j*cellSize)+cellSize-2);
+        ctx.lineTo(margin+(i*cellSize)-1+cellSize-1,margin+(j*cellSize)+1);
+        ctx.closePath();
+        ctx.strokeStyle = "#808080";
+        ctx.stroke();
+      }else if(this.cells[i][j].type==="shown"){
+        //draw the backround of the cell
+        ctx.beginPath();
+        ctx.rect(margin+(i*cellSize),margin+(j*cellSize),cellSize,cellSize);
+        ctx.fillStyle = "#d3d3d3";
+        ctx.fill();
+        //draw the border
+        ctx.beginPath();
+        ctx.rect(margin+(i*cellSize),margin+(j*cellSize),cellSize,cellSize);
+        ctx.strokeStyle = "#696969";
+        ctx.stroke();
+        //get the text of the cell
+        var cellText = this.cells[i][j].value;
+        if(cellText === "B"){
+          //For now if I have a bomb I will draw *, will change it with a mine
+          //picture in the future.
+          cellText = "*";
+        }
+        //Draw the text only if I have to
+        if(cellText!==0){
+          //the font size will be 80% of the cell size
+          ctx.font = cellSize*0.8 + 'px sans-serif';
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          //choose a different color for each number
+          switch (cellText) {
+            case 1:
+              ctx.fillStyle = "#0000ff";
+              break;
+            case 2:
+              ctx.fillStyle = "#006400";
+              break;
+            case 3:
+              ctx.fillStyle = "#ff0000";
+              break;
+            case 4:
+              ctx.fillStyle = "#ff00ff";
+              break;
+            case 5:
+              ctx.fillStyle = "#00ffff";
+              break;
+            case 6:
+              ctx.fillStyle = "#90ee90";
+              break;
+            case 7:
+              ctx.fillStyle = "#ffa500";
+              break;
+            case 8:
+              ctx.fillStyle = "#000000";
+              break;
+            default:
+              ctx.fillStyle = "#000000";
+          }
+          ctx.fillText(cellText,
+            //align the text at the bottm middle of the cell. This together with the
+            //80% font size magically centers the text. TEST WITH MULTIPLE BROWSERS!
+            margin+(i*cellSize)+cellSize/2,margin+(j*cellSize)+cellSize);
+        }
       }
     }
   }
