@@ -17,17 +17,18 @@ function Cell(type,value){
 /**
   Field object
 **/
-function Field(width,height,mines){
-  this.width = width;
-  this.height = height;
+function Field(columns,rows,mines){
+  Field.prototype.draw = drawField;
+  this.columns = columns;
+  this.rows = rows;
   //generate the array
   this.cells = [];
   //array that will store the positions of the mines
   var minePos = [];
   //INITIALIZE THE CELLS MATRIX
-  for (var i = 0; i < this.width; i++) {
+  for (var i = 0; i < this.columns; i++) {
     this.cells[i] = [];
-    for (var j = 0; j < this.height; j++) {
+    for (var j = 0; j < this.rows; j++) {
       this.cells[i][j] = new Cell("shown",0);
     }
   }
@@ -36,7 +37,7 @@ function Field(width,height,mines){
     var genPos;//generated position
     do{
       //generate a new mine position
-      genPos=getRandomInt(0,width*height);
+      genPos=getRandomInt(0,columns*rows);
       //initiate flag to true
       var flag = true;
       for (pos of minePos) {
@@ -50,8 +51,8 @@ function Field(width,height,mines){
   }
   //PLACE THE MINES INSIDE THE MATRIX
   for (pos of minePos) {
-    var x= Math.floor(pos/width);
-    var y= pos % width;
+    var x= Math.floor(pos/columns);
+    var y= pos % columns;
     this.cells[x][y].value="B";
     //Populate the proximity matrix
     if(x>0){
@@ -64,12 +65,12 @@ function Field(width,height,mines){
         this.cells[x][y-1].value++;
       }
     }
-    if(x<this.width-1){
+    if(x<this.columns-1){
       if(this.cells[x+1][y].value!=="B"){
         this.cells[x+1][y].value++;
       }
     }
-    if(y<this.height-1){
+    if(y<this.rows-1){
       if(this.cells[x][y+1].value!=="B"){
         this.cells[x][y+1].value++;
       }
@@ -79,19 +80,64 @@ function Field(width,height,mines){
         this.cells[x-1][y-1].value++;
       }
     }
-    if(x>0 && y<this.height-1){
+    if(x>0 && y<this.rows-1){
       if(this.cells[x-1][y+1].value!=="B"){
         this.cells[x-1][y+1].value++;
       }
     }
-    if(x<this.width-1 && y>0){
+    if(x<this.columns-1 && y>0){
       if(this.cells[x+1][y-1].value!=="B"){
         this.cells[x+1][y-1].value++;
       }
     }
-    if(x<this.width-1 && y<this.height-1){
+    if(x<this.columns-1 && y<this.rows-1){
       if(this.cells[x+1][y+1].value!=="B"){
         this.cells[x+1][y+1].value++;
+      }
+    }
+  }
+}
+/**
+  Function that draws the field of play
+**/
+var drawField = function (ctx, margin, width, height){
+  var cellHeight=height/this.rows;
+  var cellWidth=width/this.columns;
+  //I want squared cells, not rectangles so I keep the shortest edge
+  var cellSize = cellHeight;
+  if(cellWidth<cellSize){
+    cellSize=cellWidth;
+  }
+  /*
+  ctx.beginPath();
+  ctx.rect(margin,margin,width,height);
+  ctx.strokeStyle = "000";
+  ctx.stroke();
+  */
+  for (var i = 0; i < this.columns; i++) {
+    for (var j = 0; j < this.rows; j++) {
+      //draw the border
+      ctx.beginPath();
+      ctx.rect(margin+(i*cellSize),margin+(j*cellSize),cellSize,cellSize);
+      ctx.strokeStyle = "000";
+      ctx.stroke();
+      //get the text of the cell
+      var cellText = this.cells[i][j].value;
+      if(cellText === "B"){
+        //For now if I have a bomb I will draw *, will change it with a mine
+        //picture in the future.
+        cellText = "*";
+      }
+      //Draw the text only if I have to
+      if(cellText!==0){
+        //the font size will be 80% of the cell size
+        ctx.font = cellSize*0.8 + 'px sans-serif';
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(cellText,
+          //align the text at the bottm middle of the cell. This together with the
+          //80% font size magically centers the text. TEST WITH MULTIPLE BROWSERS!
+          margin+(i*cellSize)+cellSize/2,margin+(j*cellSize)+cellSize);
       }
     }
   }
@@ -106,4 +152,8 @@ $('#canvas').ready(function(){
   /**GAME CODE**/
   var field = new Field(10,10,10);
   console.log(field);
+  var margin = 15;
+  var width = canvas.width - 2*margin;
+  var height = canvas.height - 2*margin;
+  field.draw(ctx,margin,width,height);
 });
