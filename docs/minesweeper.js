@@ -10,11 +10,15 @@ function getRandomInt(min, max) {
 /**
   Cell object
 **/
-function Cell(type,value){
+function Cell(type,value,x,y){
   Cell.prototype.assignPos = assignCellPos;
   Cell.prototype.draw = drawCell;
+  Cell.prototype.handleLeftClick = handleLeftClick;
+  Cell.prototype.handleRightClick = handleRightClick;
   this.type = type; //can be flag, shown or hidden
   this.value = value; // B = bomb, otherwise we have proximity number
+  this.x = x;
+  this.y = y;
 }
 /**
   Function that sets the absolute coordinates of a cell
@@ -26,11 +30,23 @@ var assignCellPos = function(topX,topY,cellSize){
   this.botX = topX+cellSize-1;
   this.botY = topY+cellSize-1;
 }
+var handleLeftClick = function(){
+}
+var handleRightClick = function(){
+  switch (this.type) {
+    case "hidden":
+      this.type="flag";
+      break;
+    case "flag":
+      this.type="hidden";
+      break;
+  }
+}
 /**
   Function that draws a single cell
 **/
 var drawCell = function(ctx){
-  if(this.type==="hidden"){
+  if(this.type==="hidden"||this.type==="flag"){
     //draw the backround of the cell
     ctx.beginPath();
     ctx.rect(this.topX,this.topY,this.cellSize,this.cellSize);
@@ -63,6 +79,18 @@ var drawCell = function(ctx){
     ctx.closePath();
     ctx.strokeStyle = "#808080";
     ctx.stroke();
+    //If the cell is a flag the only difference with an hidden cell is the flag
+    //symbol that will be drawn on top of it.
+    if(this.type==="flag"){
+      ctx.font = this.cellSize*0.8 + 'px sans-serif';
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.fillStyle = "#FF0000";
+      ctx.fillText("F",
+        //align the text at the bottm middle of the cell. This together with the
+        //80% font size magically centers the text. TEST WITH MULTIPLE BROWSERS!
+        this.topX+this.cellSize/2,this.topY+this.cellSize);
+    }
   }else if(this.type==="shown"){
     //draw the backround of the cell
     ctx.beginPath();
@@ -129,6 +157,7 @@ var drawCell = function(ctx){
 function Field(columns,rows,mines){
   Field.prototype.draw = drawField;
   Field.prototype.assignConst = assignFieldConst;
+  Field.prototype.getCell = getCell;
   this.columns = columns;
   this.rows = rows;
   //generate the array
@@ -139,7 +168,7 @@ function Field(columns,rows,mines){
   for (var i = 0; i < this.columns; i++) {
     this.cells[i] = [];
     for (var j = 0; j < this.rows; j++) {
-      this.cells[i][j] = new Cell("shown",0);
+      this.cells[i][j] = new Cell("hidden",0,i,j);
     }
   }
   //GENERATE THE MINES
@@ -221,7 +250,8 @@ var assignFieldConst = function(margin, width, height){
   if(cellWidth<cellSize){
     cellSize=cellWidth;
   }
-  //cellSize=25;//default minesweeper dimensions
+  cellSize=25;//default minesweeper dimensions
+  this.cellSize = cellSize;
   //now that I have my cellSize I can assign the position to each cell
   for (var i = 0; i < this.columns; i++) {
     for (var j = 0; j < this.rows; j++) {
@@ -239,6 +269,21 @@ var drawField = function (ctx){
     }
   }
 }
+/**
+  Function that will return the cell that is selected
+**/
+var getCell = function (x,y){
+  if(x>this.margin && y>this.margin &&
+     x<this.margin+this.cellSize*this.columns &&
+     y<this.margin+this.cellSize*this.rows){
+    var col = Math.floor((x-this.margin)/this.cellSize);
+    var row = Math.floor((y-this.margin)/this.cellSize);
+    return this.cells[col][row];
+  }else{
+    return false;
+  }
+}
+
 $('#canvas').ready(function(){
   var canvas = $('#canvas').get(0);
   //set canvas size. To do: adapt canvas size to the window size
@@ -247,11 +292,30 @@ $('#canvas').ready(function(){
   //get drawable canvas context
   var ctx = canvas.getContext('2d');
   /**GAME CODE**/
-  var field = new Field(10,10,10);
-  console.log(field);
+  //generate matrix
+  field = new Field(10,10,10);
+  //console.log(field);
+  //assign constants to the field
   var margin = 15;
   var width = canvas.width - 2*margin;
   var height = canvas.height - 2*margin;
   field.assignConst(margin,width,height);
+  // assign onclick event
+  canvas.addEventListener('click',function(evt){
+    //get position of canvas relative to window
+    var rect = canvas.getBoundingClientRect(),
+        scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+        scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var offsetTop = rect.top + scrollTop,
+        offsetLeft = rect.left + scrollLeft;
+    //find the cell assigned to the position.
+    var cell = field.getCell(evt.clientX-offsetLeft,evt.clientY-offsetLeft);
+    //if I manage to get a cell then I can handle the click
+    if(cell !== false){
+      cell.handleRightClick();
+      field.draw(ctx);
+    }
+  },false);
+  //draw the field
   field.draw(ctx);
 });
