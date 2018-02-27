@@ -283,7 +283,6 @@ var getCell = function (x,y){
     return false;
   }
 }
-
 $('#canvas').ready(function(){
   var canvas = $('#canvas').get(0);
   //set canvas size. To do: adapt canvas size to the window size
@@ -300,8 +299,10 @@ $('#canvas').ready(function(){
   var width = canvas.width - 2*margin;
   var height = canvas.height - 2*margin;
   field.assignConst(margin,width,height);
-  // assign onclick event
-  canvas.addEventListener('click',function(evt){
+  /**
+    getCell wrapper to avoid passing the canvas
+  **/
+  var findCell = function (evt){
     //get position of canvas relative to window
     var rect = canvas.getBoundingClientRect(),
         scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
@@ -309,13 +310,28 @@ $('#canvas').ready(function(){
     var offsetTop = rect.top + scrollTop,
         offsetLeft = rect.left + scrollLeft;
     //find the cell assigned to the position.
-    var cell = field.getCell(evt.clientX-offsetLeft,evt.clientY-offsetLeft);
+    return field.getCell(evt.clientX-offsetLeft,evt.clientY-offsetLeft);
+  };
+  //assign onclick event (leftClick)
+  canvas.addEventListener('click',function(evt){
+    var cell = findCell(evt);
+    //if I manage to get a cell then I can handle the click
+    if(cell !== false){
+      console.log("leftClick");
+      field.draw(ctx);
+    }
+  },false);
+  // assign oncontextmenu event (rightClick)
+  canvas.oncontextmenu = function(evt){
+    evt.preventDefault();
+    var cell = findCell(evt);
     //if I manage to get a cell then I can handle the click
     if(cell !== false){
       cell.handleRightClick();
       field.draw(ctx);
     }
-  },false);
+    return false;
+  };
   //draw the field
   field.draw(ctx);
 });
