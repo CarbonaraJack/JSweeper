@@ -168,7 +168,7 @@ function Field(columns,rows,mines){
   for (var i = 0; i < this.columns; i++) {
     this.cells[i] = [];
     for (var j = 0; j < this.rows; j++) {
-      this.cells[i][j] = new Cell("hidden",0,i,j);
+      this.cells[i][j] = new Cell("shown",0,i,j);
     }
   }
   //GENERATE THE MINES
@@ -194,6 +194,24 @@ function Field(columns,rows,mines){
     var y= pos % columns;
     this.cells[x][y].value="B";
     //Populate the proximity matrix
+    //the smart way
+    for (var i = x-1; i <= x+1; i++) {
+      for (var j = y-1; j <= y+1; j++) {
+        //check that the row exists
+        if(this.cells[i]!=null){
+          //check that the cell exists
+          if(this.cells[i][j]!=null){
+            //if the cell doesn't contain a bomb
+            if(this.cells[i][j].value!=="B"){
+              //increase the proximity counter
+              this.cells[i][j].value++;
+            }
+          }
+        }
+      }
+    }
+    //the stupid way
+    /*
     if(x>0){
       if(this.cells[x-1][y].value!=="B"){
         this.cells[x-1][y].value++;
@@ -234,6 +252,7 @@ function Field(columns,rows,mines){
         this.cells[x+1][y+1].value++;
       }
     }
+    */
   }
 }
 
