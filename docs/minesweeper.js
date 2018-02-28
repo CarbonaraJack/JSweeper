@@ -212,15 +212,16 @@ var drawCell = function(ctx){
   Field object
 **/
 function Field(columns,rows,mines){
+  Field.prototype.generateMines = generateMines;
   Field.prototype.draw = drawField;
   Field.prototype.assignConst = assignFieldConst;
   Field.prototype.getCell = getCell;
   this.columns = columns;
   this.rows = rows;
+  this.mines = mines;
+  this.populated = false;
   //generate the array
   this.cells = [];
-  //array that will store the positions of the mines
-  var minePos = [];
   //INITIALIZE THE CELLS MATRIX
   for (var i = 0; i < this.columns; i++) {
     this.cells[i] = [];
@@ -228,18 +229,34 @@ function Field(columns,rows,mines){
       this.cells[i][j] = new Cell("hidden",0,i,j,this);
     }
   }
+}
+var generateMines = function (blacklist){
+  console.log("Generating Mines");
+  //array that will store the positions of the mines
+  var minePos = [];
+  //Calculate the 1D array position of each cell in the blacklist
+  var blacklistPos = [];
+  for (cell of blacklist) {
+    blacklistPos.push(cell.x*this.columns+cell.y);
+  }
   //GENERATE THE MINES
-  for (var i = 0; i < mines; i++) {
+  for (var i = 0; i < this.mines; i++) {
     var genPos;//generated position
     do{
       //generate a new mine position
-      genPos=getRandomInt(0,columns*rows);
+      genPos=getRandomInt(0,this.columns*this.rows);
       //initiate flag to true
       var flag = true;
+      //check for duplicate mines
       for (pos of minePos) {
-        flag= flag && !(pos === genPos);
         //if at least one element of the array genPos is = to the new generated
         //number then the flag becomes false and the function starts over
+        flag= flag && !(pos === genPos);
+      }
+      //check for blacklisted cells
+      for (pos of blacklistPos){
+        //ditto as above
+        flag = flag && !(pos === genPos);
       }
     } while (!flag);
     //insert the generated position in the array
@@ -247,8 +264,8 @@ function Field(columns,rows,mines){
   }
   //PLACE THE MINES INSIDE THE MATRIX
   for (pos of minePos) {
-    var x= Math.floor(pos/columns);
-    var y= pos % columns;
+    var x= Math.floor(pos/this.columns);
+    var y= pos % this.columns;
     this.cells[x][y].value="B";
     //Populate the proximity matrix
     //the smart way
@@ -259,52 +276,11 @@ function Field(columns,rows,mines){
         neighbor.value++;
       }
     }
-    //the stupid way
-    /*
-    if(x>0){
-      if(this.cells[x-1][y].value!=="B"){
-        this.cells[x-1][y].value++;
-      }
-    }
-    if(y>0){
-      if(this.cells[x][y-1].value!=="B"){
-        this.cells[x][y-1].value++;
-      }
-    }
-    if(x<this.columns-1){
-      if(this.cells[x+1][y].value!=="B"){
-        this.cells[x+1][y].value++;
-      }
-    }
-    if(y<this.rows-1){
-      if(this.cells[x][y+1].value!=="B"){
-        this.cells[x][y+1].value++;
-      }
-    }
-    if(x>0 && y>0){
-      if(this.cells[x-1][y-1].value!=="B"){
-        this.cells[x-1][y-1].value++;
-      }
-    }
-    if(x>0 && y<this.rows-1){
-      if(this.cells[x-1][y+1].value!=="B"){
-        this.cells[x-1][y+1].value++;
-      }
-    }
-    if(x<this.columns-1 && y>0){
-      if(this.cells[x+1][y-1].value!=="B"){
-        this.cells[x+1][y-1].value++;
-      }
-    }
-    if(x<this.columns-1 && y<this.rows-1){
-      if(this.cells[x+1][y+1].value!=="B"){
-        this.cells[x+1][y+1].value++;
-      }
-    }
-    */
   }
+  //check populated flag to true so that I don't generate a new minefield with
+  //each click.
+  this.populated = true;
 }
-
 /**
   Function that sets the constant variables of a field and sets the position of
   each individual cell
@@ -385,7 +361,11 @@ $('#canvas').ready(function(){
     var cell = findCell(evt);
     //if I manage to get a cell then I can handle the click
     if(cell !== false){
-      cell.handleLeftClick(field);
+      if(!field.populated){
+        //generate mines
+        field.generateMines(cell.getNeighbors());
+      }
+      cell.handleLeftClick();
       field.draw(ctx);
     }
   },false);
