@@ -10,15 +10,17 @@ function getRandomInt(min, max) {
 /**
   Cell object
 **/
-function Cell(type,value,x,y){
+function Cell(type,value,x,y,field){
   Cell.prototype.assignPos = assignCellPos;
   Cell.prototype.draw = drawCell;
+  Cell.prototype.getNeighbors = getNeighbors;
   Cell.prototype.handleLeftClick = handleLeftClick;
   Cell.prototype.handleRightClick = handleRightClick;
   this.type = type; //can be flag, shown or hidden
   this.value = value; // B = bomb, otherwise we have proximity number
   this.x = x;
   this.y = y;
+  this.field = field;
 }
 /**
   Function that sets the absolute coordinates of a cell
@@ -30,8 +32,63 @@ var assignCellPos = function(topX,topY,cellSize){
   this.botX = topX+cellSize-1;
   this.botY = topY+cellSize-1;
 }
-var handleLeftClick = function(){
+/**
+  Convenient function that returns a list of surrounding cells given a cell and
+  its field.
+**/
+var getNeighbors = function(){
+  var res = [];
+  for (var i = this.x-1; i <= this.x+1; i++) {
+    for (var j = this.y-1; j <= this.y+1; j++) {
+      //make sure that the row exists
+      if(this.field.cells[i]!=null){
+        //make sure that the cell exists
+        if(this.field.cells[i][j]!=null){
+          res.push(this.field.cells[i][j]);
+        }
+      }
+    }
+  }
+  return res;
 }
+/**
+  Function that handles left click behaviour
+**/
+var handleLeftClick = function(){
+  switch (this.type) {
+    case "hidden":
+        this.type= "shown";
+        //if I clicked a cell with proximity value = 0 then I can show all the
+        //neighboring cells
+        if (this.value===0){
+          for (neighbor of this.getNeighbors()) {
+            neighbor.handleLeftClick();
+          }
+        }
+      break;
+    case "shown":
+      //count the surrounding flags
+      var flags = 0;
+      for (neighbor of this.getNeighbors()) {
+        if(neighbor.type==="flag"){
+          flags++
+        }
+      }
+      //if the number of cell is equal to the proximity value
+      if(flags===this.value){
+        for (neighbor of this.getNeighbors()) {
+          //click the cell only if it is hidden
+          if(neighbor.type==="hidden"){
+            neighbor.handleLeftClick();
+          }
+        }
+      }
+      break;
+  }
+}
+/**
+  Function that handles right click behaviour (flag positioning)
+**/
 var handleRightClick = function(){
   switch (this.type) {
     case "hidden":
@@ -168,7 +225,7 @@ function Field(columns,rows,mines){
   for (var i = 0; i < this.columns; i++) {
     this.cells[i] = [];
     for (var j = 0; j < this.rows; j++) {
-      this.cells[i][j] = new Cell("shown",0,i,j);
+      this.cells[i][j] = new Cell("hidden",0,i,j,this);
     }
   }
   //GENERATE THE MINES
@@ -195,19 +252,11 @@ function Field(columns,rows,mines){
     this.cells[x][y].value="B";
     //Populate the proximity matrix
     //the smart way
-    for (var i = x-1; i <= x+1; i++) {
-      for (var j = y-1; j <= y+1; j++) {
-        //check that the row exists
-        if(this.cells[i]!=null){
-          //check that the cell exists
-          if(this.cells[i][j]!=null){
-            //if the cell doesn't contain a bomb
-            if(this.cells[i][j].value!=="B"){
-              //increase the proximity counter
-              this.cells[i][j].value++;
-            }
-          }
-        }
+    for (neighbor of this.cells[x][y].getNeighbors()) {
+      //if the cell doesn't contain a bomb
+      if(neighbor.value!=="B"){
+        //increase the proximity counter
+        neighbor.value++;
       }
     }
     //the stupid way
@@ -336,7 +385,7 @@ $('#canvas').ready(function(){
     var cell = findCell(evt);
     //if I manage to get a cell then I can handle the click
     if(cell !== false){
-      console.log("leftClick");
+      cell.handleLeftClick(field);
       field.draw(ctx);
     }
   },false);
