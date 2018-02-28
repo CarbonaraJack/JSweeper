@@ -10,8 +10,7 @@ function getRandomInt(min, max) {
 /**
   Cell object
 **/
-function Cell(type,value,x,y,field){
-  Cell.prototype.assignPos = assignCellPos;
+function Cell(type,value,x,y,field,topX,topY){
   Cell.prototype.draw = drawCell;
   Cell.prototype.getNeighbors = getNeighbors;
   Cell.prototype.handleLeftClick = handleLeftClick;
@@ -21,16 +20,11 @@ function Cell(type,value,x,y,field){
   this.x = x;
   this.y = y;
   this.field = field;
-}
-/**
-  Function that sets the absolute coordinates of a cell
-**/
-var assignCellPos = function(topX,topY,cellSize){
   this.topX = topX;
   this.topY = topY;
-  this.cellSize = cellSize;
-  this.botX = topX+cellSize-1;
-  this.botY = topY+cellSize-1;
+  this.cellSize = field.cellSize;
+  this.botX = topX+this.cellSize-1;
+  this.botY = topY+this.cellSize-1;
 }
 /**
   Convenient function that returns a list of surrounding cells given a cell and
@@ -211,27 +205,39 @@ var drawCell = function(ctx){
 /**
   Field object
 **/
-function Field(columns,rows,mines){
+function Field(columns,rows,mines,margin,width,height){
   Field.prototype.generateMines = generateMines;
   Field.prototype.draw = drawField;
-  Field.prototype.assignConst = assignFieldConst;
   Field.prototype.getCell = getCell;
   this.columns = columns;
   this.rows = rows;
   this.mines = mines;
+  this.margin = margin;
   this.populated = false;
+
+  //calcuulate dimensions
+  var cellHeight=height/rows;
+  var cellWidth=width/columns;
+  //I want squared cells, not rectangles so I keep the shortest edge
+  var cellSize = cellHeight;
+  if(cellWidth<cellSize){
+    cellSize=cellWidth;
+  }
+  //cellSize=25;//default minesweeper dimensions
+  this.cellSize = cellSize;
   //generate the array
   this.cells = [];
   //INITIALIZE THE CELLS MATRIX
   for (var i = 0; i < this.columns; i++) {
     this.cells[i] = [];
     for (var j = 0; j < this.rows; j++) {
-      this.cells[i][j] = new Cell("hidden",0,i,j,this);
+      this.cells[i][j] = new Cell("hidden",0,i,j,this,
+      margin+cellSize*i,margin+cellSize*j);
     }
   }
 }
 var generateMines = function (blacklist){
-  console.log("Generating Mines");
+  //console.log("Generating Mines");
   //array that will store the positions of the mines
   var minePos = [];
   //Calculate the 1D array position of each cell in the blacklist
@@ -282,28 +288,6 @@ var generateMines = function (blacklist){
   this.populated = true;
 }
 /**
-  Function that sets the constant variables of a field and sets the position of
-  each individual cell
-**/
-var assignFieldConst = function(margin, width, height){
-  this.margin = margin;
-  var cellHeight=height/this.rows;
-  var cellWidth=width/this.columns;
-  //I want squared cells, not rectangles so I keep the shortest edge
-  var cellSize = cellHeight;
-  if(cellWidth<cellSize){
-    cellSize=cellWidth;
-  }
-  cellSize=25;//default minesweeper dimensions
-  this.cellSize = cellSize;
-  //now that I have my cellSize I can assign the position to each cell
-  for (var i = 0; i < this.columns; i++) {
-    for (var j = 0; j < this.rows; j++) {
-      this.cells[i][j].assignPos(margin+cellSize*i,margin+cellSize*j,cellSize);
-    }
-  }
-}
-/**
   Function that draws the field of play
 **/
 var drawField = function (ctx){
@@ -335,14 +319,15 @@ $('#canvas').ready(function(){
   //get drawable canvas context
   var ctx = canvas.getContext('2d');
   /**GAME CODE**/
-  //generate matrix
-  field = new Field(10,10,10);
-  //console.log(field);
-  //assign constants to the field
+  //field vars
+  var columns = 10;
+  var rows = 10;
+  var mines = 10;
   var margin = 15;
   var width = canvas.width - 2*margin;
   var height = canvas.height - 2*margin;
-  field.assignConst(margin,width,height);
+  var field = new Field(columns,rows,mines,margin,width,height);
+  //console.log(field);
   /**
     getCell wrapper to avoid passing the canvas
   **/
