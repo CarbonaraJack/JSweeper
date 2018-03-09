@@ -52,6 +52,16 @@ var handleLeftClick = function(){
   switch (this.type) {
     case "hidden":
         this.type= "shown";
+        //check if I clicked a mine, if not, decrease the safe squares counter
+        if(this.value==="B"){
+          this.field.gameOver = true;
+        }else{
+          this.field.safeSq--;
+          //if I revealed all the safe hidden cells then the game is over
+          if(this.field.safeSq===0){
+            this.field.gameOver = true;
+          }
+        }
         //if I clicked a cell with proximity value = 0 then I can show all the
         //neighboring cells
         if (this.value===0){
@@ -215,10 +225,14 @@ function Field(columns,rows,mines,margin,width,height){
   this.margin = margin;
   this.populated = false;
 
-  //calcuulate dimensions
+  //game over flags
+  this.safeSq = rows*columns - mines;
+  this.gameOver = false;
+
+  //calculate dimensions
   var cellHeight=height/rows;
   var cellWidth=width/columns;
-  //I want squared cells, not rectangles so I keep the shortest edge
+  //I want squared cells, not rectangles. This is why I keep the shortest edge
   var cellSize = cellHeight;
   if(cellWidth<cellSize){
     cellSize=cellWidth;
@@ -296,6 +310,14 @@ var drawField = function (ctx){
       this.cells[i][j].draw(ctx);
     }
   }
+  //check if the game is over, and if so then display the Game Over popup
+  if(this.gameOver){
+    if(this.safeSq===0){
+      window.alert("You win!");
+    }else{
+      window.alert("You lose!");
+    }
+  }
 }
 /**
   Function that will return the cell that is selected
@@ -350,8 +372,10 @@ $('#canvas').ready(function(){
         //generate mines
         field.generateMines(cell.getNeighbors());
       }
-      cell.handleLeftClick();
-      field.draw(ctx);
+      if(!field.gameOver){
+        cell.handleLeftClick();
+        field.draw(ctx);
+      }
     }
   },false);
   // assign oncontextmenu event (rightClick)
@@ -359,7 +383,7 @@ $('#canvas').ready(function(){
     evt.preventDefault();
     var cell = findCell(evt);
     //if I manage to get a cell then I can handle the click
-    if(cell !== false){
+    if(cell !== false && !field.gameOver){
       cell.handleRightClick();
       field.draw(ctx);
     }
