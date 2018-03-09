@@ -8,6 +8,23 @@ function getRandomInt(min, max) {
   //The maximum is exclusive and the minimum is inclusive
 }
 /**
+  Grumdrig roundRect function (https://stackoverflow.com/a/7838871)
+**/
+CanvasRenderingContext2D.prototype.roundRect =
+  function (x, y, width, height, radius) {
+    if (width < 2 * radius) radius = width / 2;
+    if (height < 2 * radius) radius = height / 2;
+    this.beginPath();
+    this.moveTo(x+radius, y);
+    this.arcTo(x+width, y,        x+width,  y+height, radius);
+    this.arcTo(x+width, y+height, x,        y+height, radius);
+    this.arcTo(x,       y+height, x,        y,        radius);
+    this.arcTo(x,       y,        x+width,  y,        radius);
+    this.closePath();
+    return this;
+  }
+
+/**
   Cell object
 **/
 function Cell(type,value,x,y,field,topX,topY){
@@ -143,21 +160,61 @@ var drawCell = function(ctx){
         ctx.closePath();
         ctx.strokeStyle = "#808080";
         ctx.stroke();
-        //If the cell is a flag the only difference with an hidden cell is the flag
-        //symbol that will be drawn on top of it.
+        //If the cell is a flag the only difference with an hidden cell is the
+        //flag symbol that will be drawn on top of it.
         if(this.type==="flag"){
           ctx.font = this.cellSize*0.8 + 'px sans-serif';
           ctx.textAlign = "center";
           ctx.textBaseline = "bottom";
           ctx.fillStyle = "#FF0000";
           ctx.fillText("F",
-            //align the text at the bottm middle of the cell. This together with the
-            //80% font size magically centers the text. TEST WITH MULTIPLE BROWSERS!
+            //align the text at the bottm middle of the cell.
+            //This together with the 80% font size magically centers the text.
+            //TEST WITH MULTIPLE BROWSERS!
             this.topX+this.cellSize/2,this.topY+this.cellSize);
         }
         break;
       default:
         //Outrun Skin
+        switch (this.type) {
+        case "flag":
+          //draw the border of the cell
+          ctx.fillStyle = "#221d0d";//very dark yellow
+          ctx.roundRect
+            (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
+            this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
+            this.cellSize*0.20).fill();
+          //fill the cell
+          ctx.strokeStyle = "#f4b80c";//light yellow
+          ctx.roundRect
+            (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
+            this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
+            this.cellSize*0.20).stroke();
+          //type F for flag
+          ctx.font = this.cellSize*0.8 + 'px sans-serif';
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          ctx.fillStyle = "#f4b80c";
+          ctx.fillText("F",
+            //align the text at the bottm middle of the cell.
+            //This together with the 80% font size magically centers the text.
+            //TEST WITH MULTIPLE BROWSERS!
+            this.topX+this.cellSize/2,this.topY+this.cellSize);
+          break;
+        default:
+          //draw the border of the cell
+          ctx.fillStyle ="#280215"//dark pink "#111f24";//very dark blue
+          ctx.roundRect
+            (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
+            this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
+            this.cellSize*0.20).fill();
+          //fill the cell
+          ctx.strokeStyle = "#ff0081"//pink //"#42c6ff";//light blue
+          ctx.roundRect
+            (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
+            this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
+            this.cellSize*0.20).stroke();
+        }
     }
   }else if(this.type==="shown"){
     switch (this.field.skin) {
@@ -216,13 +273,65 @@ var drawCell = function(ctx){
               ctx.fillStyle = "#000000";
           }
           ctx.fillText(cellText,
-            //align the text at the bottm middle of the cell. This together with the
-            //80% font size magically centers the text. TEST WITH MULTIPLE BROWSERS!
+            //align the text at the bottm middle of the cell.
+            //This together with the 80% font size magically centers the text.
+            //TEST WITH MULTIPLE BROWSERS!
             this.topX+this.cellSize/2,this.topY+this.cellSize);
         }
         break;
       default:
-        //outrun skin
+        //Outrun Skin
+        if(this.value!=="B"){
+          //draw the border of the cell
+          ctx.fillStyle ="#111f24";//very dark blue
+          ctx.roundRect
+            (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
+            this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
+            this.cellSize*0.20).fill();
+          //fill the cell
+          ctx.strokeStyle = "#42c6ff";//light blue
+          ctx.roundRect
+            (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
+            this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
+            this.cellSize*0.20).stroke();
+        }else{
+          //draw the border of the cell
+          ctx.fillStyle ="#770926";//dark red
+          ctx.roundRect
+            (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
+            this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
+            this.cellSize*0.20).fill();
+          //fill the cell
+          ctx.strokeStyle = "#f4225a";//red
+          ctx.roundRect
+            (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
+            this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
+            this.cellSize*0.20).stroke();
+        }
+        //get the text of the cell
+        var cellText = this.value;
+        if(cellText === "B"){
+          //For now if I have a bomb I will draw *, will change it with a mine
+          //picture in the future.
+          cellText = "*";
+        }
+        //Draw the text only if I have to
+        if(cellText!==0){
+          //the font size will be 80% of the cell size
+          ctx.font = this.cellSize*0.8 + 'px sans-serif';
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          if(cellText==="*"){
+            ctx.fillStyle = "#f4225a";//red
+          }else{
+            ctx.fillStyle = "#42c6ff";//light blue
+          }
+          ctx.fillText(cellText,
+            //align the text at the bottm middle of the cell.
+            //This together with the 80% font size magically centers the text.
+            //TEST WITH MULTIPLE BROWSERS!
+            this.topX+this.cellSize/2,this.topY+this.cellSize);
+      }
     }
   }
 }
@@ -238,6 +347,8 @@ function Field(columns,rows,mines,margin,width,height,skin){
   this.mines = mines;
   this.margin = margin;
   this.skin = skin;
+  this.width = width;
+  this.height = height;
   this.populated = false;
 
   //game over flags
@@ -320,6 +431,12 @@ var generateMines = function (blacklist){
   Function that draws the field of play
 **/
 var drawField = function (ctx){
+  if (this.skin==="outrun"){
+    console.log("in");
+    //draw background
+    ctx.fillStyle = "#000";
+    ctx.fillRect(this.margin,this.margin,this.width,this.height);
+  }
   for (var i = 0; i < this.columns; i++) {
     for (var j = 0; j < this.rows; j++) {
       this.cells[i][j].draw(ctx);
@@ -363,7 +480,7 @@ $('#canvas').ready(function(){
   var margin = 15;
   var width = canvas.width - 2*margin;
   var height = canvas.height - 2*margin;
-  var skin = "classic";
+  var skin = "outrun";
   var field = new Field(columns,rows,mines,margin,width,height,skin);
   //console.log(field);
   /**
