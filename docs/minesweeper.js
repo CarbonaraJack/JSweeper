@@ -432,7 +432,6 @@ var generateMines = function (blacklist){
 **/
 var drawField = function (ctx){
   if (this.skin==="outrun"){
-    console.log("in");
     //draw background
     ctx.fillStyle = "#000";
     ctx.fillRect(this.margin,this.margin,this.width,this.height);
@@ -480,7 +479,7 @@ $('#canvas').ready(function(){
   var margin = 15;
   var width = canvas.width - 2*margin;
   var height = canvas.height - 2*margin;
-  var skin = "outrun";
+  var skin = "classic";
   var field = new Field(columns,rows,mines,margin,width,height,skin);
   //console.log(field);
   /**
