@@ -383,7 +383,7 @@ var generateMines = function (blacklist){
   //Calculate the 1D array position of each cell in the blacklist
   var blacklistPos = [];
   for (cell of blacklist) {
-    blacklistPos.push(cell.x*this.columns+cell.y);
+    blacklistPos.push(cell.y*this.columns+cell.x);
   }
   //GENERATE THE MINES
   for (var i = 0; i < this.mines; i++) {
@@ -410,8 +410,8 @@ var generateMines = function (blacklist){
   }
   //PLACE THE MINES INSIDE THE MATRIX
   for (pos of minePos) {
-    var x= Math.floor(pos/this.columns);
-    var y= pos % this.columns;
+    var y= Math.floor(pos/this.columns);
+    var x= pos % this.columns;
     this.cells[x][y].value="B";
     //Populate the proximity matrix
     //the smart way
