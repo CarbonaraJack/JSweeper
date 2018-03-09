@@ -108,114 +108,128 @@ var handleRightClick = function(){
 **/
 var drawCell = function(ctx){
   if(this.type==="hidden"||this.type==="flag"){
-    //draw the backround of the cell
-    ctx.beginPath();
-    ctx.rect(this.topX,this.topY,this.cellSize,this.cellSize);
-    ctx.fillStyle = "#d3d3d3";
-    ctx.fill();
-    //draw the border
-    //I have to simulate standard HTML solid border behaviour
-    //this is a pain, but I want to stick with the original minesweeper look
-    //and feel as much as I can
+    switch (this.field.skin) {
+      case "classic":
+        //classic skin
+        //draw the backround of the cell
+        ctx.beginPath();
+        ctx.rect(this.topX,this.topY,this.cellSize,this.cellSize);
+        ctx.fillStyle = "#d3d3d3";
+        ctx.fill();
+        //draw the border
+        //I have to simulate standard HTML solid border behaviour
+        //this is a pain, but I want to stick with the original minesweeper look
+        //and feel as much as I can
 
-    //Top and left borders
-    ctx.beginPath();
-    ctx.moveTo(this.topX,this.topY);
-    ctx.lineTo(this.botX,this.topY);
-    ctx.lineTo(this.botX-1,this.topY+1);
-    ctx.lineTo(this.topX+1,this.topY+1);
-    ctx.lineTo(this.topX+1,this.botY-1);
-    ctx.lineTo(this.topX,this.botY);
-    ctx.closePath();
-    ctx.strokeStyle = "#f5f5f5";
-    ctx.stroke();
-    //bottom and right borders
-    ctx.beginPath();
-    ctx.moveTo(this.botX,this.topY+1);
-    ctx.lineTo(this.botX,this.botY);
-    ctx.lineTo(this.topX+1,this.botY);
-    ctx.lineTo(this.topX+2,this.botY-1);
-    ctx.lineTo(this.botX-1,this.botY-1);
-    ctx.lineTo(this.botX-1,this.topY+1);
-    ctx.closePath();
-    ctx.strokeStyle = "#808080";
-    ctx.stroke();
-    //If the cell is a flag the only difference with an hidden cell is the flag
-    //symbol that will be drawn on top of it.
-    if(this.type==="flag"){
-      ctx.font = this.cellSize*0.8 + 'px sans-serif';
-      ctx.textAlign = "center";
-      ctx.textBaseline = "bottom";
-      ctx.fillStyle = "#FF0000";
-      ctx.fillText("F",
-        //align the text at the bottm middle of the cell. This together with the
-        //80% font size magically centers the text. TEST WITH MULTIPLE BROWSERS!
-        this.topX+this.cellSize/2,this.topY+this.cellSize);
+        //Top and left borders
+        ctx.beginPath();
+        ctx.moveTo(this.topX,this.topY);
+        ctx.lineTo(this.botX,this.topY);
+        ctx.lineTo(this.botX-1,this.topY+1);
+        ctx.lineTo(this.topX+1,this.topY+1);
+        ctx.lineTo(this.topX+1,this.botY-1);
+        ctx.lineTo(this.topX,this.botY);
+        ctx.closePath();
+        ctx.strokeStyle = "#f5f5f5";
+        ctx.stroke();
+        //bottom and right borders
+        ctx.beginPath();
+        ctx.moveTo(this.botX,this.topY+1);
+        ctx.lineTo(this.botX,this.botY);
+        ctx.lineTo(this.topX+1,this.botY);
+        ctx.lineTo(this.topX+2,this.botY-1);
+        ctx.lineTo(this.botX-1,this.botY-1);
+        ctx.lineTo(this.botX-1,this.topY+1);
+        ctx.closePath();
+        ctx.strokeStyle = "#808080";
+        ctx.stroke();
+        //If the cell is a flag the only difference with an hidden cell is the flag
+        //symbol that will be drawn on top of it.
+        if(this.type==="flag"){
+          ctx.font = this.cellSize*0.8 + 'px sans-serif';
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          ctx.fillStyle = "#FF0000";
+          ctx.fillText("F",
+            //align the text at the bottm middle of the cell. This together with the
+            //80% font size magically centers the text. TEST WITH MULTIPLE BROWSERS!
+            this.topX+this.cellSize/2,this.topY+this.cellSize);
+        }
+        break;
+      default:
+        //Outrun Skin
     }
   }else if(this.type==="shown"){
-    //draw the backround of the cell
-    ctx.beginPath();
-    ctx.rect(this.topX,this.topY,this.cellSize,this.cellSize);
-    ctx.fillStyle = "#d3d3d3";
-    ctx.fill();
-    //draw the border
-    ctx.beginPath();
-    ctx.rect(this.topX,this.topY,this.cellSize,this.cellSize);
-    ctx.strokeStyle = "#696969";
-    ctx.stroke();
-    //get the text of the cell
-    var cellText = this.value;
-    if(cellText === "B"){
-      //For now if I have a bomb I will draw *, will change it with a mine
-      //picture in the future.
-      cellText = "*";
-    }
-    //Draw the text only if I have to
-    if(cellText!==0){
-      //the font size will be 80% of the cell size
-      ctx.font = this.cellSize*0.8 + 'px sans-serif';
-      ctx.textAlign = "center";
-      ctx.textBaseline = "bottom";
-      //choose a different color for each number
-      switch (cellText) {
-        case 1:
-          ctx.fillStyle = "#0000ff";
-          break;
-        case 2:
-          ctx.fillStyle = "#006400";
-          break;
-        case 3:
-          ctx.fillStyle = "#ff0000";
-          break;
-        case 4:
-          ctx.fillStyle = "#ff00ff";
-          break;
-        case 5:
-          ctx.fillStyle = "#00ffff";
-          break;
-        case 6:
-          ctx.fillStyle = "#90ee90";
-          break;
-        case 7:
-          ctx.fillStyle = "#ffa500";
-          break;
-        case 8:
-          ctx.fillStyle = "#000000";
-          break;
-        default:
-          ctx.fillStyle = "#000000";
-      }
-      ctx.fillText(cellText,
-        //align the text at the bottm middle of the cell. This together with the
-        //80% font size magically centers the text. TEST WITH MULTIPLE BROWSERS!
-        this.topX+this.cellSize/2,this.topY+this.cellSize);
+    switch (this.field.skin) {
+      case "classic":
+        //classic skin
+        //draw the backround of the cell
+        ctx.beginPath();
+        ctx.rect(this.topX,this.topY,this.cellSize,this.cellSize);
+        ctx.fillStyle = "#d3d3d3";
+        ctx.fill();
+        //draw the border
+        ctx.beginPath();
+        ctx.rect(this.topX,this.topY,this.cellSize,this.cellSize);
+        ctx.strokeStyle = "#696969";
+        ctx.stroke();
+        //get the text of the cell
+        var cellText = this.value;
+        if(cellText === "B"){
+          //For now if I have a bomb I will draw *, will change it with a mine
+          //picture in the future.
+          cellText = "*";
+        }
+        //Draw the text only if I have to
+        if(cellText!==0){
+          //the font size will be 80% of the cell size
+          ctx.font = this.cellSize*0.8 + 'px sans-serif';
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          //choose a different color for each number
+          switch (cellText) {
+            case 1:
+              ctx.fillStyle = "#0000ff";
+              break;
+            case 2:
+              ctx.fillStyle = "#006400";
+              break;
+            case 3:
+              ctx.fillStyle = "#ff0000";
+              break;
+            case 4:
+              ctx.fillStyle = "#ff00ff";
+              break;
+            case 5:
+              ctx.fillStyle = "#00ffff";
+              break;
+            case 6:
+              ctx.fillStyle = "#90ee90";
+              break;
+            case 7:
+              ctx.fillStyle = "#ffa500";
+              break;
+            case 8:
+              ctx.fillStyle = "#000000";
+              break;
+            default:
+              ctx.fillStyle = "#000000";
+          }
+          ctx.fillText(cellText,
+            //align the text at the bottm middle of the cell. This together with the
+            //80% font size magically centers the text. TEST WITH MULTIPLE BROWSERS!
+            this.topX+this.cellSize/2,this.topY+this.cellSize);
+        }
+        break;
+      default:
+        //outrun skin
     }
   }
 }
 /**
   Field object
 **/
-function Field(columns,rows,mines,margin,width,height){
+function Field(columns,rows,mines,margin,width,height,skin){
   Field.prototype.generateMines = generateMines;
   Field.prototype.draw = drawField;
   Field.prototype.getCell = getCell;
@@ -223,6 +237,7 @@ function Field(columns,rows,mines,margin,width,height){
   this.rows = rows;
   this.mines = mines;
   this.margin = margin;
+  this.skin = skin;
   this.populated = false;
 
   //game over flags
@@ -348,7 +363,8 @@ $('#canvas').ready(function(){
   var margin = 15;
   var width = canvas.width - 2*margin;
   var height = canvas.height - 2*margin;
-  var field = new Field(columns,rows,mines,margin,width,height);
+  var skin = "classic";
+  var field = new Field(columns,rows,mines,margin,width,height,skin);
   //console.log(field);
   /**
     getCell wrapper to avoid passing the canvas
