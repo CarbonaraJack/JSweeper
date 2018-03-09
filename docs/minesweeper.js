@@ -23,6 +23,29 @@ CanvasRenderingContext2D.prototype.roundRect =
     this.closePath();
     return this;
   }
+/**
+  Function that simulates CSS's outsetRect border
+**/
+CanvasRenderingContext2D.prototype.outsetRect =
+    function (topX, topY, botX, botY, bWidth) {
+      if(bWidth>0){
+        //lighter border
+        this.beginPath();
+        this.moveTo(topX, botY-1);
+        this.lineTo(topX,topY);
+        this.lineTo(botX-1,topY)
+        this.strokeStyle = "#f5f5f5";
+        this.stroke();
+        //darker border
+        this.beginPath();
+        this.moveTo(botX, topY);
+        this.lineTo(botX, botY);
+        this.lineTo(topX, botY)
+        this.strokeStyle = "#808080";
+        this.stroke();
+        this.outsetRect(topX+1,topY+1,botX-1,botY-1,bWidth-1);
+      }
+    }
 
 /**
   Cell object
@@ -137,29 +160,8 @@ var drawCell = function(ctx){
         //I have to simulate standard HTML solid border behaviour
         //this is a pain, but I want to stick with the original minesweeper look
         //and feel as much as I can
-
-        //Top and left borders
-        ctx.beginPath();
-        ctx.moveTo(this.topX,this.topY);
-        ctx.lineTo(this.botX,this.topY);
-        ctx.lineTo(this.botX-1,this.topY+1);
-        ctx.lineTo(this.topX+1,this.topY+1);
-        ctx.lineTo(this.topX+1,this.botY-1);
-        ctx.lineTo(this.topX,this.botY);
-        ctx.closePath();
-        ctx.strokeStyle = "#f5f5f5";
-        ctx.stroke();
-        //bottom and right borders
-        ctx.beginPath();
-        ctx.moveTo(this.botX,this.topY+1);
-        ctx.lineTo(this.botX,this.botY);
-        ctx.lineTo(this.topX+1,this.botY);
-        ctx.lineTo(this.topX+2,this.botY-1);
-        ctx.lineTo(this.botX-1,this.botY-1);
-        ctx.lineTo(this.botX-1,this.topY+1);
-        ctx.closePath();
-        ctx.strokeStyle = "#808080";
-        ctx.stroke();
+        ctx.outsetRect
+          (this.topX,this.topY,this.botX,this.botY,this.cellSize*0.1);
         //If the cell is a flag the only difference with an hidden cell is the
         //flag symbol that will be drawn on top of it.
         if(this.type==="flag"){
