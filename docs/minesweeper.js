@@ -8,7 +8,7 @@ function getRandomInt(min, max) {
   //The maximum is exclusive and the minimum is inclusive
 }
 /**
-  Grumdrig roundRect function (https://stackoverflow.com/a/7838871)
+  Grumdrig's roundRect function (https://stackoverflow.com/a/7838871)
 **/
 CanvasRenderingContext2D.prototype.roundRect =
   function (x, y, width, height, radius) {
@@ -27,23 +27,23 @@ CanvasRenderingContext2D.prototype.roundRect =
   Function that simulates CSS's outsetRect border
 **/
 CanvasRenderingContext2D.prototype.outsetRect =
-    function (topX, topY, botX, botY, bWidth) {
+    function (topX, topY, botX, botY, bWidth, hover) {
       if(bWidth>0){
         //lighter border
         this.beginPath();
         this.moveTo(topX, botY-1);
         this.lineTo(topX,topY);
         this.lineTo(botX-1,topY)
-        this.strokeStyle = "#f5f5f5";
+        this.strokeStyle = ((hover) ? "#808080" : "#f5f5f5");
         this.stroke();
         //darker border
         this.beginPath();
         this.moveTo(botX, topY);
         this.lineTo(botX, botY);
         this.lineTo(topX, botY)
-        this.strokeStyle = "#808080";
+        this.strokeStyle = ((hover) ? "#f5f5f5" : "#808080");
         this.stroke();
-        this.outsetRect(topX+1,topY+1,botX-1,botY-1,bWidth-1);
+        this.outsetRect(topX+1,topY+1,botX-1,botY-1,bWidth-1,hover);
       }
     }
 
@@ -147,6 +147,7 @@ var handleRightClick = function(){
   Function that draws a single cell
 **/
 var drawCell = function(ctx){
+  var hover = this.field.hovered===this;
   if(this.type==="hidden"||this.type==="flag"){
     switch (this.field.skin) {
       case "classic":
@@ -154,14 +155,15 @@ var drawCell = function(ctx){
         //draw the backround of the cell
         ctx.beginPath();
         ctx.rect(this.topX,this.topY,this.cellSize,this.cellSize);
-        ctx.fillStyle = "#d3d3d3";
+        ctx.fillStyle = ((hover) ? "#9b9b9b" : "#d3d3d3");
         ctx.fill();
         //draw the border
         //I have to simulate standard HTML solid border behaviour
         //this is a pain, but I want to stick with the original minesweeper look
         //and feel as much as I can
         ctx.outsetRect
-          (this.topX,this.topY,this.botX,this.botY,this.cellSize*0.1);
+          (this.topX,this.topY,this.botX,this.botY,
+            this.cellSize*0.1,this.field.hovered===this);
         //If the cell is a flag the only difference with an hidden cell is the
         //flag symbol that will be drawn on top of it.
         if(this.type==="flag"){
@@ -180,13 +182,13 @@ var drawCell = function(ctx){
         //Outrun Skin
         switch (this.type) {
         case "flag":
-          //draw the border of the cell
-          ctx.fillStyle = "#221d0d";//very dark yellow
+          //fill the cell
+          ctx.fillStyle = ((hover)? "#ab8108" : "#221d0d");//very dark yellow
           ctx.roundRect
             (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
             this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
             this.cellSize*0.20).fill();
-          //fill the cell
+          //draw the border of the cell
           ctx.strokeStyle = "#f4b80c";//light yellow
           ctx.roundRect
             (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
@@ -204,14 +206,14 @@ var drawCell = function(ctx){
             this.topX+this.cellSize/2,this.topY+this.cellSize);
           break;
         default:
-          //draw the border of the cell
-          ctx.fillStyle ="#280215"//dark pink "#111f24";//very dark blue
+          //fill the cell
+          ctx.fillStyle =((hover) ? "#96054e" : "#280215");//dark pink
           ctx.roundRect
             (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
             this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
             this.cellSize*0.20).fill();
-          //fill the cell
-          ctx.strokeStyle = "#ff0081"//pink //"#42c6ff";//light blue
+          //draw the border of the cell
+          ctx.strokeStyle = "#ff0081"//pink
           ctx.roundRect
             (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
             this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
@@ -225,7 +227,7 @@ var drawCell = function(ctx){
         //draw the backround of the cell
         ctx.beginPath();
         ctx.rect(this.topX,this.topY,this.cellSize,this.cellSize);
-        ctx.fillStyle = "#d3d3d3";
+        ctx.fillStyle = ((hover) ? "#9b9b9b" : "#d3d3d3");
         ctx.fill();
         //draw the border
         ctx.beginPath();
@@ -284,26 +286,26 @@ var drawCell = function(ctx){
       default:
         //Outrun Skin
         if(this.value!=="B"){
-          //draw the border of the cell
-          ctx.fillStyle ="#111f24";//very dark blue
+          //fill the cell
+          ctx.fillStyle =((hover)? "#246a88" : "#111f24");//very dark blue
           ctx.roundRect
             (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
             this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
             this.cellSize*0.20).fill();
-          //fill the cell
+          //draw the border of the cell
           ctx.strokeStyle = "#42c6ff";//light blue
           ctx.roundRect
             (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
             this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
             this.cellSize*0.20).stroke();
         }else{
-          //draw the border of the cell
+          //fill the cell
           ctx.fillStyle ="#770926";//dark red
           ctx.roundRect
             (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
             this.cellSize-this.cellSize*0.1,this.cellSize-this.cellSize*0.1,
             this.cellSize*0.20).fill();
-          //fill the cell
+          //draw the border of the cell
           ctx.strokeStyle = "#f4225a";//red
           ctx.roundRect
             (this.topX+this.cellSize*0.05,this.topY+this.cellSize*0.05,
@@ -481,7 +483,7 @@ $('#canvas').ready(function(){
   var margin = 15;
   var width = canvas.width - 2*margin;
   var height = canvas.height - 2*margin;
-  var skin = "classic";
+  var skin = "outrun";
   var field = new Field(columns,rows,mines,margin,width,height,skin);
   //console.log(field);
   /**
@@ -497,19 +499,12 @@ $('#canvas').ready(function(){
     //find the cell assigned to the position.
     return field.getCell(evt.clientX-offsetLeft,evt.clientY-offsetLeft);
   };
-  /*
   //assign onhover event
-  canvas.addEventListener('onmousehover',function(evt){
+  canvas.onmousemove = function(evt){
     var cell = findCell(evt);
     //if I manage to get a cell then I can handle the click
-    if(cell !== false){
-      //if it is the first time I hover a cell then
-      if(field.hoverCell == false){
-        cell.handleLeftClick();
-      }
-    }
-  },false);
-  */
+    field.hovered = cell;
+  };
   //assign onclick event (leftClick)
   canvas.addEventListener('click',function(evt){
     var cell = findCell(evt);
