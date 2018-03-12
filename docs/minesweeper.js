@@ -497,6 +497,19 @@ $('#canvas').ready(function(){
     //find the cell assigned to the position.
     return field.getCell(evt.clientX-offsetLeft,evt.clientY-offsetLeft);
   };
+  /*
+  //assign onhover event
+  canvas.addEventListener('onmousehover',function(evt){
+    var cell = findCell(evt);
+    //if I manage to get a cell then I can handle the click
+    if(cell !== false){
+      //if it is the first time I hover a cell then
+      if(field.hoverCell == false){
+        cell.handleLeftClick();
+      }
+    }
+  },false);
+  */
   //assign onclick event (leftClick)
   canvas.addEventListener('click',function(evt){
     var cell = findCell(evt);
@@ -508,7 +521,7 @@ $('#canvas').ready(function(){
       }
       if(!field.gameOver){
         cell.handleLeftClick();
-        field.draw(ctx);
+        //field.draw(ctx);
       }
     }
   },false);
@@ -519,10 +532,14 @@ $('#canvas').ready(function(){
     //if I manage to get a cell then I can handle the click
     if(cell !== false && !field.gameOver){
       cell.handleRightClick();
-      field.draw(ctx);
+      //field.draw(ctx);
     }
     return false;
   };
-  //draw the field
-  field.draw(ctx);
+  function loop(){
+    //draw the field
+    field.draw(ctx);
+    requestAnimationFrame(loop);
+  }
+  loop();
 });
