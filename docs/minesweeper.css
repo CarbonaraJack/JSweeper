@@ -7,9 +7,6 @@
   align-content: center;
   justify-content: center;
 }
-#canvas{
-  display: block;
-}
 body{
   background-color: black;
 }

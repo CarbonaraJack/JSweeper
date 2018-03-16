@@ -468,8 +468,10 @@ var getCell = function (x,y){
     return false;
   }
 }
-$('#canvas').ready(function(){
-  var canvas = $('#canvas').get(0);
+$(document).ready(function(){
+  var canvasContainer = $('#canvas-container').get(0);
+  var canvas = document.createElement("canvas");
+  canvasContainer.appendChild(canvas);
   //set canvas size. To do: adapt canvas size to the window size
   canvas.width = 630;
   canvas.height = 630;
@@ -494,10 +496,13 @@ $('#canvas').ready(function(){
     var rect = canvas.getBoundingClientRect(),
         scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
         scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        /*
+        not working in ff
     var offsetTop = rect.top + scrollTop,
         offsetLeft = rect.left + scrollLeft;
-    //find the cell assigned to the position.
-    return field.getCell(evt.clientX-offsetLeft,evt.clientY-offsetLeft);
+        */
+    return field.getCell(evt.clientX-rect.left,
+                         evt.clientY-rect.top);
   };
   //assign onhover event
   canvas.onmousemove = function(evt){
